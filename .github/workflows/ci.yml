@@ -33,6 +33,8 @@ jobs:
     - name: Install dependencies
       run: |
         source $HOME/.cargo/env
+        uv venv
+        source .venv/bin/activate
         uv pip install -r requirements.txt
         # uv pip install fastapi uvicorn sqlalchemy pydantic slowapi pytest httpx
 
