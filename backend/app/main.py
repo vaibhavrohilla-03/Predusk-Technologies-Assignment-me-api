@@ -1,14 +1,25 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
-import json
-
-from . import models, schemas
+from . import models, schemas, dependencies
 from .database import SessionLocal, engine
 
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from starlette.requests import Request
 
+import logging
+from dotenv import load_dotenv
 
+load_dotenv()
+
+logging.basicConfig(level=logging.INFO,format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", handlers=[logging.FileHandler("api.log"),logging.StreamHandler()])
+logger = logging.getLogger(__name__)
+
+limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(title="ME-api")
+
 
 def getDataBase():
     db = SessionLocal()
@@ -21,8 +32,10 @@ def getDataBase():
 def healthCheck():
     return {"status": "ok"}
 
+
 @app.get("/profile",response_model=schemas.Profile)
-def readProfile(db: Session = Depends(getDataBase)):
+@limiter.limit("5/minute")
+def readProfile(request: Request, db: Session = Depends(getDataBase)):
 
     profile = db.query(models.Profile).filter(models.Profile.id == 1).first()
     if not profile:
@@ -43,25 +56,41 @@ def readProfile(db: Session = Depends(getDataBase)):
         "links": links   
     }
 
+
+
 @app.get("/skills/top", response_model=List[schemas.Skill])
 def get_TopSkills(db : Session = Depends(getDataBase)):
     
     top_skills = db.query(models.Skill).filter(models.Skill.is_top_skill == True).all()
     return top_skills
 
+
+
+
+@app.post("/skills", response_model=schemas.Skill, status_code=status.HTTP_201_CREATED)
+def create_skill(skill: schemas.SkillCreate, db: Session = Depends(getDataBase), username: str = Depends(dependencies.get_current_username)):
+    db_skill = models.Skill(**skill.model_dump())
+    db.add(db_skill)
+    db.commit()
+    db.refresh(db_skill)
+    return db_skill
+
 @app.get("/projects", response_model=List[schemas.Project])
-def get_project_by_Skill(skill: Optional[str] = None, db: Session = Depends(getDataBase)):
+def get_project_by_Skill(skill: Optional[str] = None, db: Session = Depends(getDataBase),skip: int = 0, limit: int = 10):
     query = db.query(models.Project).options(joinedload(models.Project.categories))
     
     if skill:
         query = query.join(models.project_categories).join(models.Category).filter(models.Category.name.ilike(f"%{skill}%"))
     
-    projects_orm = query.all()
+    projects_orm = projects_orm = query.offset(skip).limit(limit).all()
     projects = [schemas.Project.from_orm_with_json(p) for p in projects_orm]
     return projects
 
-app.get("/search")
+
+
+@app.get("/search")
 def search_Content(q: str, db: Session = Depends(getDataBase)):
+    logger.info(f"Search performed with query '{q}'")
     if not q:
         return {"projects": [], "skills": []}
 
@@ -73,6 +102,8 @@ def search_Content(q: str, db: Session = Depends(getDataBase)):
     skills = db.query(models.Skill).filter(models.Skill.name.ilike(f"%{q}%")).all()
     
     return {"projects": projects, "skills": skills}
+
+
 
 @app.get("/by-category/{category_name}", response_model=schemas.CategoryDetail)
 def get_by_category(category_name: str, db: Session = Depends(getDataBase)):

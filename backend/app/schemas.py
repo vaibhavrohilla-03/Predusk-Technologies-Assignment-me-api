@@ -86,3 +86,7 @@ class Profile(BaseModel):
 class CategoryDetail(BaseModel):
     projects: List[Project]
     work_experience: List[WorkExperience]
+
+class SkillCreate(BaseModel):
+    name: str
+    is_top_skill: bool = False
