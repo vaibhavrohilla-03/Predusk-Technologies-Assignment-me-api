@@ -1,6 +1,6 @@
-// frontend/script.js
 
-const API_BASE_URL = 'http://127.0.0.1:8000';
+
+const API_BASE_URL = 'https://predusk-technologies-assignment-vaibhav.onrender.com/';
 
 let allProjects = [];
 
@@ -12,8 +12,6 @@ const workContainer = document.getElementById('work-container');
 const educationContainer = document.getElementById('education-container');
 const skillSearchInput = document.getElementById('skill-search');
 
-
-// --- DEBOUNCE FUNCTION AND INSTANCE (MOVED TO THE TOP) ---
 // This prevents the API from being called on every keystroke
 function debounce(func, delay) {
     let timeout;
@@ -27,8 +25,6 @@ const debouncedFilter = debounce(() => {
     filterProjects(skillSearchInput.value); 
 }, 300);
 
-// --- EVENT LISTENERS ---
-// Now, debouncedFilter exists when this line is run
 document.addEventListener('DOMContentLoaded', fetchAndDisplayProfile);
 skillSearchInput.addEventListener('input', debouncedFilter);
 
