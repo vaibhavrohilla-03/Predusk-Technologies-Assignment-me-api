@@ -3,9 +3,11 @@ DROP TABLE IF EXISTS skills;
 DROP TABLE IF EXISTS projects;
 DROP TABLE IF EXISTS work_experience;
 DROP TABLE IF EXISTS links;
+DROP TABLE IF EXISTS education;
 DROP TABLE IF EXISTS project_categories;
 DROP TABLE IF EXISTS work_experience_categories;
 DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS project_skills;
 
 create table m_profile (
     id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -46,6 +48,14 @@ create table categories(
     name TEXT NOT NULL UNIQUE
 );
 
+create table education (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    institution TEXT NOT NULL,
+    degree TEXT NOT NULL,
+    start_date TEXT NOT NULL,
+    end_date TEXT
+);
+
 create table project_categories(
     project_id INTEGER NOT NULL,
     category_id INTEGER NOT NULL,
@@ -60,4 +70,12 @@ create table work_experience_categories(
     PRIMARY KEY (work_experience_id, category_id),
     FOREIGN KEY (work_experience_id) REFERENCES work_experience (id) ON DELETE CASCADE,
     FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE
+);
+
+create table project_skills (
+    project_id INTEGER NOT NULL,
+    skill_id INTEGER NOT NULL,
+    PRIMARY KEY (project_id, skill_id),
+    FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE,
+    FOREIGN KEY (skill_id) REFERENCES skills (id) ON DELETE CASCADE
 );

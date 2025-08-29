@@ -3,7 +3,6 @@ from .database import engine
 import json
 
 def create_tables(conn):
-    """Reads and executes the schema.sql file to create tables."""
     try:
         with open('backend/app/schema.sql', 'r') as f:
             schema = f.read()
@@ -14,7 +13,6 @@ def create_tables(conn):
         raise
 
 def seed_data(conn):
-    """Inserts your resume data into the database tables."""
     cursor = conn.cursor()
 
     profile_data = (1, 'Vaibhav Rohilla', 'vaibhavrohilla03@gmail.com')
@@ -40,6 +38,10 @@ def seed_data(conn):
         ('Cloud Computing',),    
         ('QuantFinance',),       
         ('General',)              
+    ]
+
+    education_data = [
+        ('Manipal University Jaipur', 'B.Tech in Computer Science and Engineering', '2022-08-01', '2026-05-31')
     ]
 
     work_experience_data = [
@@ -75,19 +77,33 @@ def seed_data(conn):
     project_categories_data = [
         (1, 1), (1, 5), # AR Nav -> AR/VR, Cloud Computing
         (2, 4),         # RAG Chatbot -> Backend and AI
-        (3, 7),         # TurtleSim -> General (EK BAAR REVIEW MAAR LIYO ISKO WAPIS)
+        (3, 7),         # TurtleSim -> General                                                 (EK BAAR REVIEW MAAR LIYO ISKO WAPIS)
         (4, 6)          # Option Backtesting Engine -> QuantFinance
     ]
+
+    project_skills_data = [
+        # Project 1: AR Campus Navigation -> Unity, C#, Firebase, ARCore
+        (1, 4), (1, 3), (1, 10), (1, 14),
+        # Project 2: Web Scraper & RAG Chatbot -> Python, ChromaDB, Langchain
+        (2, 1), (2, 18), (2, 19),                                                                    #(EK BAAR REVIEW MAAR LIYO ISKO WAPIS)
+        # Project 3: TurtleSim Motion Controller -> C++, ROS2, CMake
+        (3, 2), (3, 16), (3, 6),
+        # Project 4: Option Strategy Backtesting Engine -> C++, Python, CMake
+        (4, 2), (4, 1), (4, 6)
+    ]
+
     try:
         print("Seeding data...")
         cursor.execute("INSERT INTO m_profile (id, name, email) VALUES (?, ?, ?);", profile_data)
         cursor.executemany("INSERT INTO links (name, url) VALUES (?, ?);", links_data)
         cursor.executemany("INSERT INTO skills (name, is_top_skill) VALUES (?, ?);", skills_data)
         cursor.executemany("INSERT INTO categories (name) VALUES (?);", categories_data)
+        cursor.executemany("INSERT INTO education (institution, degree, start_date, end_date) VALUES (?, ?, ?, ?);", education_data)
         cursor.executemany("INSERT INTO work_experience (company, position, start_date, end_date, description) VALUES (?, ?, ?, ?, ?);", work_experience_data)
         cursor.executemany("INSERT INTO projects (title, description, links) VALUES (?, ?, ?);", projects_data)
         cursor.executemany("INSERT INTO project_categories (project_id, category_id) VALUES (?, ?);", project_categories_data)
         cursor.executemany("INSERT INTO work_experience_categories (work_experience_id, category_id) VALUES (?, ?);", work_experience_categories_data)
+        cursor.executemany("INSERT INTO project_skills (project_id, skill_id) VALUES (?, ?);", project_skills_data)
         conn.commit()
         print("Seeding complete. Data committed.")
     except Exception as e:

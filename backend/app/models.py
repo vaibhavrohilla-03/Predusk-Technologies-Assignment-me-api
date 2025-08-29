@@ -14,6 +14,11 @@ work_experience_categories = Table('work_experience_categories', Base.metadata,
     Column('category_id', Integer, ForeignKey('categories.id'), primary_key=True)
 )
 
+project_skills = Table('project_skills', Base.metadata,
+    Column('project_id', Integer, ForeignKey('projects.id'), primary_key=True),
+    Column('skill_id', Integer, ForeignKey('skills.id'), primary_key=True)
+)
+
 class Profile(Base):
     __tablename__ = 'm_profile'
     id = Column(Integer, primary_key=True)
@@ -48,6 +53,15 @@ class WorkExperience(Base):
     description = Column(Text)
 
     categories = relationship('Category', secondary=work_experience_categories, back_populates='work_experiences')
+
+
+class Education(Base):
+    __tablename__ = 'education'
+    id = Column(Integer, primary_key=True)
+    institution = Column(String, nullable=False)
+    degree = Column(String, nullable=False)
+    start_date = Column(String, nullable=False)
+    end_date = Column(String)
 
 
 class Link(Base):

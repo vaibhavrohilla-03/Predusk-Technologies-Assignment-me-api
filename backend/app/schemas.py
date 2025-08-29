@@ -25,6 +25,12 @@ class WorkExperienceBase(BaseModel):
     end_date: Optional[date]
     description: Optional[str]
 
+class EducationBase(BaseModel):
+    institution: str
+    degree: str
+    start_date: str
+    end_date: Optional[str]
+
 class LinkBase(BaseModel):
     name: str
     url: str
@@ -41,10 +47,18 @@ class Category(CategoryBase):
     class Config:
         from_attributes = True
 
+class Education(EducationBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
 class Project(ProjectBase):
     id: int
     links: Optional[Dict[str, str]]
     categories: List[Category] = []
+    skills: List[Skill] = []
 
     class Config:
         from_attributes = True
@@ -75,6 +89,7 @@ class Link(LinkBase):
 class Profile(BaseModel):
     name: str
     email: EmailStr
+    education: List[Education]
     skills: List[Skill]
     projects: List[Project]
     work_experience: List[WorkExperience]
