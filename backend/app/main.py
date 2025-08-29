@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 from . import models, schemas, dependencies
@@ -14,6 +15,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+import os
+print(f" Username from .env: {os.getenv('ADMIN_USERNAME')} ---")
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", handlers=[logging.FileHandler("api.log"), logging.StreamHandler()])
 logger = logging.getLogger(__name__)
 
@@ -24,6 +28,7 @@ origins = [
     "http://localhost",
     "http://localhost:3000",
     "http://127.0.0.1:5500",
+    "http://127.0.0.1:8080"
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -92,14 +97,24 @@ def create_skill(skill: schemas.SkillCreate, db: Session = Depends(getDataBase),
 
 
 @app.get("/projects", response_model=List[schemas.Project], tags=["Projects"])
-def get_project_by_Skill(skill: Optional[str] = None, db: Session = Depends(getDataBase), skip: int = 0, limit: int = 10):
+def get_projects(q: Optional[str] = None, db: Session = Depends(getDataBase), skip: int = 0, limit: int = 10):
+
     query = db.query(models.Project).options(
         joinedload(models.Project.categories), 
         joinedload(models.Project.skills)
     )
-    if skill:
-        query = query.join(models.project_skills).join(models.Skill).filter(models.Skill.name.ilike(f"%{skill}%"))
     
+    if q:
+        search_query = f"%{q}%"
+        query = query.join(models.project_skills, isouter=True).join(models.Skill, isouter=True) \
+                     .join(models.project_categories, isouter=True).join(models.Category, isouter=True) \
+                     .filter(
+                         or_(
+                             models.Skill.name.ilike(search_query),
+                             models.Category.name.ilike(search_query)
+                         )
+                     ).distinct()
+
     projects_orm = query.order_by(models.Project.id).offset(skip).limit(limit).all()
     projects = [schemas.Project.from_orm_with_json(p) for p in projects_orm]
     return projects
