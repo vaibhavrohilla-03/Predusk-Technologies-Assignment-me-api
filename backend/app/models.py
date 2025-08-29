@@ -31,6 +31,8 @@ class Skill(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False, unique=True)
     is_top_skill = Column(Boolean, default=False)
+    
+    projects = relationship('Project', secondary=project_skills, back_populates='skills')
 
 
 class Project(Base):
@@ -41,6 +43,7 @@ class Project(Base):
     links = Column(Text)
     
     categories = relationship('Category', secondary=project_categories, back_populates='projects')
+    skills = relationship('Skill', secondary=project_skills, back_populates='projects')
 
 
 class WorkExperience(Base):
