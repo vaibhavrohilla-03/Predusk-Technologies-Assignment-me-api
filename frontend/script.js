@@ -1,6 +1,6 @@
 
 
-const API_BASE_URL = 'https://predusk-technologies-assignment-vaibhav.onrender.com/';
+const API_BASE_URL = 'https://predusk-technologies-assignment-vaibhav.onrender.com';
 
 let allProjects = [];
 
