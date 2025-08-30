@@ -219,7 +219,11 @@ Here are a few examples of how to interact with the live API.
 - **Search Functionality**: The search is performed using simple ILIKE queries, which is not as robust or efficient as a dedicated full-text search.
 - **Error Handling**: The API has basic error handling but could be improved with more granular error responses and logging.
 
+## Basic CI pipeline Implementation
+- **GitHubActions**
+
 ## Resume Link
  ```bash
   https://drive.google.com/file/d/1qAhRee1TLhKKiCQJmf0Tv1-mp4R8jLH7/view?usp=sharing
   ```
+
